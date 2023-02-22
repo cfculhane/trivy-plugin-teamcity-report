@@ -1,36 +1,75 @@
 #!/bin/bash
 
+set +euo pipefail # Exit on any non-zero exit code, and error on use of undefined var
+# Note that the trivy commands will still exit with code 0 when vulns are detected unless --exit-code is set.
+
 # Usage
 function usage() {
   cat <<EOS >&2
-Usage: trivy teamcity-report [-h,--help] OUTPUTPUTFILE [TRIVY OPTIONS]
+Usage: trivy teamcity-report [-h,--help] TRIVYCMD TARGET OUTPUTPUTFILE [TRIVY OPTIONS]
  A Trivy plugin that exports an html report in a format used for teamcity, and outputs teamcity messages.
 Options:
   -h, --help    Show usage.
 Examples:
-  # Scan an $(affinda/ocr) image
+  # Scan an $(affinda/ocr) image with default settings
   trivy teamcity-report image affinda/ocr output.html
-  # Scan a local dir
-  trivy teamcity-report fs ~/affinda/frontend
+  # Scan a local dir for misconfiguration
+  trivy teamcity-report fs ~/affinda/awscfn output.html --scanners config
 EOS
   exit
 }
 
+success_message() {
+  echo -e "\033[0;32m ✔️  $1  \t\033[0m"
+}
+
+warning_message() {
+  echo -e "\033[0;33m$1  \t\033[0m"
+}
+
+info_message() {
+  echo -e "\033[0;34m$1  \t\033[0m"
+}
+
+error_message() {
+  echo -e "\033[0;31m$1  \t\033[0m"
+}
+
 function scan {
   BASEDIR=$(dirname "$0")
-  echo -e "\033[0;34mScanning and exporting HTML report to '$3'\t\033[0m"
-  trivy $1 --format template --template @$BASEDIR/html.tpl --output $3 $2
 
-  echo -e "\033[0;34mPrinting summary\t\033[0m"
-  trivy $1 $2
-  echo -e "\033[0;34mEmitting teamcity messages ...\t\033[0m"
+  trivy_command="$1"
+  info_message "trivy_command = $trivy_command"
+  shift
+
+  target="$1"
+  info_message "target = $target"
+  shift
+
+  output_file="$1"
+  info_message "output_file = $output_file"
+  shift
+
+  trivy_params="$@"
+  info_message "trivy_params = $trivy_params"
+
+  if [[ $output_file == "" ]]; then
+    error_message "ERROR - no output file specified, please specify.\nExample: trivy teamcity-report image affinda/ocr output.html"
+    exit 1
+  fi
+
+  info_message "Scanning and exporting HTML report to '$output_file'"
+  trivy $trivy_command --format template --template @$BASEDIR/html.tpl --output "$output_file" "$@" $target
+#
+  info_message "Printing summary:"
+  trivy $trivy_command --quiet "$@" $target
+  info_message "Emitting teamcity messages:"
   # Explcitiy use all severities so that reporting of statistic messages is accurate
-  trivy $1 --format json --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL $2 | "$BASEDIR/export_teamcity_messages.py"
+  trivy $trivy_command $target --quiet --format json --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL "$@" | "$BASEDIR/export_teamcity_messages.py"
 }
 
 if [[ ($# -eq 0) || ($1 == "--help") || ($1 == "-h") ]]; then
   # No commands or the --help flag passed and we'll show the usage instructions
   usage
 fi
-
 scan "$@"

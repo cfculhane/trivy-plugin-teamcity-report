@@ -13,7 +13,7 @@ def escape_value(value):
     return "".join(_quote.get(x, x) for x in value)
 
 
-class VulnSeverity(str, Enum):
+class Severity(str, Enum):
     UNKNOWN = "UNKNOWN"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -40,19 +40,37 @@ def teamcity_message(messageName: str, **properties):
     print(message)
 
 
-def process_vulnerabilities(results: Dict) -> None:
+def process_output(results: Dict) -> None:
     all_vulns = []
-    for vulns in results["Results"]:
-        all_vulns.extend(vulns["Vulnerabilities"])
+    all_misconfigs = []
+    vuln_scan = False
+    config_scan = False
+    for result in results["Results"]:
+        if result.get("Vulnerabilities") is not None:
+            vuln_scan = True  # We assume there will be at least one vuln, even a low one, present to use as a test
+            all_vulns.extend(result["Vulnerabilities"])
+        elif result.get("Class") == "config":
+            config_scan = True  # Even without misconfigs this this will be present
+            if result.get("Misconfigurations"):
+                all_misconfigs.extend(result["Misconfigurations"])
+        else:
+            raise ValueError(f"Unknown result: {result}")
 
-    for vuln_severity in VulnSeverity:
-        vuln_count = len([v for v in all_vulns if v["Severity"] == vuln_severity])
-        print(f"Number of {vuln_severity} vulnerabilities = {vuln_count}")
-        print(f"##teamcity[buildStatisticValue key='VULNERABLITY_COUNT_{vuln_severity}' value='{vuln_count}']")
+    if vuln_scan:
+        for severity in Severity:
+            vuln_count = len([v for v in all_vulns if v["Severity"] == severity])
+            print(f"##teamcity[buildStatisticValue key='VULNERABLITY_COUNT_{severity}' value='{vuln_count}']")
+
+    if config_scan:
+        for severity in Severity:
+            misconfig_count = len([v for v in all_misconfigs if v["Severity"] == severity])
+            print(f"##teamcity[buildStatisticValue key='MISCONFIGURATION_COUNT_{severity}' value='{misconfig_count}']")
 
 
 if __name__ == '__main__':
     trivy_output = json.loads(sys.stdin.read())
-
-    # TODO add report type detection
-    process_vulnerabilities(trivy_output)
+    if trivy_output.get("Results") is None or len(trivy_output["Results"]) == 0:
+        print("Could not find any results, check logs for details.")
+        exit(0)
+    else:
+        process_output(trivy_output)
