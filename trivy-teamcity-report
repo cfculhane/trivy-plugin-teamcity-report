@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Usage
+function usage() {
+  cat <<EOS >&2
+Usage: trivy teamcity-report [-h,--help] OUTPUTPUTFILE [TRIVY OPTIONS]
+ A Trivy plugin that exports an html report in a format used for teamcity, and outputs teamcity messages.
+Options:
+  -h, --help    Show usage.
+Examples:
+  # Scan an $(affinda/ocr) image
+  trivy teamcity-report image affinda/ocr output.html
+  # Scan a local dir
+  trivy teamcity-report fs ~/affinda/frontend
+EOS
+  exit
+}
+
+function scan {
+  BASEDIR=$(dirname "$0")
+  echo -e "\033[0;34mScanning and exporting HTML report to '$3'\t\033[0m"
+  trivy $1 --format template --template @$BASEDIR/html.tpl --output $3 $2
+  echo -e "\033[0;34mEmitting teamcity messages ...\t\033[0m"
+  # Explcitiy use all severities so that reporting of statistic messages is accurate
+  trivy $1 --format json --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL $2 | "$BASEDIR/export_teamcity_messages.py"
+}
+
+if [[ ($# -eq 0) || ($1 == "--help") || ($1 == "-h") ]]; then
+  # No commands or the --help flag passed and we'll show the usage instructions
+  usage
+fi
+
+scan "$@"
