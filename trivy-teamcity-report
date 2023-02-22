@@ -20,6 +20,9 @@ function scan {
   BASEDIR=$(dirname "$0")
   echo -e "\033[0;34mScanning and exporting HTML report to '$3'\t\033[0m"
   trivy $1 --format template --template @$BASEDIR/html.tpl --output $3 $2
+
+  echo -e "\033[0;34mPrinting summary\t\033[0m"
+  trivy $1 $2
   echo -e "\033[0;34mEmitting teamcity messages ...\t\033[0m"
   # Explcitiy use all severities so that reporting of statistic messages is accurate
   trivy $1 --format json --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL $2 | "$BASEDIR/export_teamcity_messages.py"

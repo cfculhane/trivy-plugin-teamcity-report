@@ -10,5 +10,5 @@ platforms:
   - selector: # optional
       os: linux
       arch: amd64
-    uri: /home/chris/trivy-teamcity-report/dist/dist.tar.gz
+    uri: https://github.com/cfculhane/trivy-teamcity-report.git
     bin: ./trivy-teamcity-report
