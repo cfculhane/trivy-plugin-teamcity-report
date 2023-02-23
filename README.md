@@ -1,2 +1,2 @@
-# trivy-teamcity-report
+# trivy-plugin-teamcity-report
 Trivy plugin to generate reports suitable for display in teamcity
