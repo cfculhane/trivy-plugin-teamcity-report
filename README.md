@@ -4,7 +4,8 @@ A Trivy plugin that exports an html report in a format used for teamcity, and ou
 ### Installation
 
 ```shell
-trivy plugin install https://github.com/cfculhane/trivy-plugin-teamcity-report
+# Ensure the address starts with github, not https:// as this will fail
+trivy plugin install github.com/cfculhane/trivy-plugin-teamcity-report
 ```
 
 ### Usage: 
