@@ -6,15 +6,15 @@ set +euo pipefail # Exit on any non-zero exit code, and error on use of undefine
 # Usage
 function usage() {
   cat <<EOS >&2
-Usage: trivy teamcity-report [-h,--help] TRIVYCMD TARGET OUTPUTPUTFILE [TRIVY OPTIONS]
+Usage: trivy teamcity-report [-h,--help] OPERATION TARGET OUTPUTPUTFILE [TRIVYPARAMS]
  A Trivy plugin that exports an html report in a format used for teamcity, and outputs teamcity messages.
 Options:
   -h, --help    Show usage.
 Examples:
-  # Scan an $(affinda/ocr) image with default settings
-  trivy teamcity-report image affinda/ocr output.html
-  # Scan a local dir for misconfiguration
-  trivy teamcity-report fs ~/affinda/awscfn output.html --scanners config
+  # Scan an image with default settings
+  trivy teamcity-report image python:3.8 output.html
+  # Scan a local dir for vulns and misconfiguration
+  trivy teamcity-report fs /path/to/dir output.html --scanners vuln,config
 EOS
   exit
 }
