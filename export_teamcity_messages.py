@@ -3,6 +3,7 @@
 import json
 import sys
 from enum import Enum
+from pprint import pformat
 from time import time, localtime, strftime
 from typing import Dict
 
@@ -46,15 +47,15 @@ def process_output(results: Dict) -> None:
     vuln_scan = False
     config_scan = False
     for result in results["Results"]:
-        if result.get("Vulnerabilities") is not None:
-            vuln_scan = True  # We assume there will be at least one vuln, even a low one, present to use as a test
-            all_vulns.extend(result["Vulnerabilities"])
-        elif result.get("Class") == "config":
+        if result.get("Class") == "config":
             config_scan = True  # Even without misconfigs this this will be present
             if result.get("Misconfigurations"):
-                all_misconfigs.extend(result["Misconfigurations"])
+                all_misconfigs.extend(result.get("Misconfigurations", []))
         else:
-            raise ValueError(f"Unknown result: {result}")
+            vuln_scan = True  # We assume there will be at least one vuln, even a low one, present to use as a test
+            if result.get("Vulnerabilities") is None:
+                print(f"Warning - could not find any vulns, check this is accurate! Result was: \n{pformat(result)}")
+            all_vulns.extend(result.get("Vulnerabilities", []))
 
     if vuln_scan:
         for severity in Severity:
