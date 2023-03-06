@@ -136,6 +136,9 @@
         <tr class="group-header">
             <th colspan="7">{{ escapeXML .Type }}</th>
         </tr>
+        <tr>
+            <th colspan="7">Path: {{ escapeXML .Target }}</th>
+        </tr>
         {{- if (eq (len .Vulnerabilities) 0) }}
             <tr>
                 <th colspan="6">No Vulnerabilities found</th>
