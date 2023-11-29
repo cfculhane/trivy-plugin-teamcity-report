@@ -2,3 +2,5 @@ dist/
 .idea/
 .python-version
 example.json
+
+output.html
