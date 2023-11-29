@@ -134,7 +134,7 @@
 <table>
     {{- range $result := . }}
         <tr class="group-header">
-            <th colspan="7">{{ escapeXML .Type }}</th>
+            <th colspan="7">{{ .Type | toString | escapeXML  }}</th>
         </tr>
         <tr>
             <th colspan="7">Path: {{ escapeXML .Target }}</th>
