@@ -4,3 +4,5 @@ dist/
 example.json
 
 output.html
+build/
+nimcache/

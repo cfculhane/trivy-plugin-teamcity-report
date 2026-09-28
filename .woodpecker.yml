@@ -1,0 +1,51 @@
+when:
+  - event: cron
+    cron: renovate
+  - event: manual
+  - event: pull_request
+  - event: push
+    branch: main
+  - event: tag
+    ref: refs/tags/*
+
+steps:
+  - name: test
+    image: nimlang/nim:2.2.4
+    commands:
+      - nimble test -y
+
+  - name: build
+    image: nimlang/nim:2.2.4
+    commands:
+      - apt-get update && apt-get install -y --no-install-recommends musl-tools
+      - nimble release -y
+      - build/tests
+    depends_on:
+      - test
+
+  - name: release
+    image: woodpeckerci/plugin-release:0.3.1
+    settings:
+      api-key:
+        from_secret: github_token
+      files:
+        - dist/*.tar.gz
+      file-exists: fail
+      generate-release-notes: true
+    depends_on:
+      - build
+    when:
+      - event: tag
+
+  - name: renovate
+    image: renovate/renovate:latest
+    commands:
+      - renovate "$CI_REPO"
+    environment:
+      RENOVATE_PLATFORM: github
+      RENOVATE_TOKEN:
+        from_secret: renovate_token
+    when:
+      - event: cron
+        cron: renovate
+      - event: manual
