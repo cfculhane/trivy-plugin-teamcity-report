@@ -17,5 +17,5 @@ platforms:
   - selector:
       os: linux
       arch: arm64
-      uri: https://github.com/gregory112/trivy-plugin-teamcity-report/releases/download/0.7.3/trivy-plugin-teamcity-report-0.7.3.tar.gz
-      bin: ./teamcity-report
+    uri: https://github.com/gregory112/trivy-plugin-teamcity-report/releases/download/0.7.3/trivy-plugin-teamcity-report-0.7.3.tar.gz
+    bin: ./teamcity-report
