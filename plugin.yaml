@@ -1,6 +1,6 @@
 name: "teamcity-report"
-repository: github.com/cfculhane/trivy-plugin-teamcity-report
-version: "0.7.2"
+repository: github.com/gregory112/trivy-plugin-teamcity-report
+version: "0.7.3"
 usage: Generate trivy reports for trivy
 description: |-
   A Trivy plugin that exports an html report in a format used for teamcity, and outputs teamcity messages
@@ -9,8 +9,13 @@ description: |-
   - trivy teamcity-report image python:3.8 output.html --scanners vuln
   - trivy teamcity-report fs /path/to/dir output.html --scanners vuln,config
 platforms:
-  - selector: # optional
+  - selector:
       os: linux
       arch: amd64
-    uri: https://github.com/cfculhane/trivy-plugin-teamcity-report/releases/download/0.7.2/trivy-plugin-teamcity-report-0.7.2.tar.gz
+    uri: https://github.com/gregory112/trivy-plugin-teamcity-report/releases/download/0.7.3/trivy-plugin-teamcity-report-0.7.3.tar.gz
     bin: ./teamcity-report
+  - selector:
+      os: linux
+      arch: arm64
+      uri: https://github.com/gregory112/trivy-plugin-teamcity-report/releases/download/0.7.3/trivy-plugin-teamcity-report-0.7.3.tar.gz
+      bin: ./teamcity-report
